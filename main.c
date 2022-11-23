@@ -1,3 +1,4 @@
+#include "config.h"
 #include "stc15.h"
 #include <stdint.h>
 
@@ -105,8 +106,6 @@ void battery_isr(void) __interrupt(IE3_VECTOR) {
                  // noise
 }
 
-#define reset_delay 1
-#define max_delay 450
 uint16_t current_delay;
 uint16_t current_delay_remaining;
 

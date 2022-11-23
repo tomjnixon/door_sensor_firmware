@@ -3,7 +3,7 @@ CFLAGS = -mmcs51 --iram-size 128 --xram-size 0 --code-size 4088
 
 export SDCC_NOGENRAMCLEAR = 1
 
-main.ihx: main.c stc15.h
+main.ihx: main.c stc15.h config.h
 	$(CC) $(CFLAGS) $< -o $@
 
 .PHONY: flash
