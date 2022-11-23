@@ -101,7 +101,8 @@ void battery_isr(void) __interrupt(IE3_VECTOR) {
   if (!io_batt)
     state |= bit_battery;
 
-  AUXR2 &= ~EX3; // enable (falling only)
+  AUXR2 &= ~EX3; // disable so that this doesn't get triggered repeatedly due to
+                 // noise
 }
 
 #define reset_delay 1
