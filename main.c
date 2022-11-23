@@ -120,10 +120,6 @@ void main() {
   io_ask = 0;
   io_tx = 1;
 
-  serial_tx('h');
-  serial_tx('i');
-  serial_tx('\n');
-
   // setup reed interrupt
   IT0 = 0; // rising or falling
   EX0 = 1; // enable
