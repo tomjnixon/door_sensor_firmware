@@ -49,37 +49,130 @@ uint8_t last_state = 0xff;
 
 static const uint8_t id[3] = {0x10, 0x20, 0x30};
 
-void xmit_byte(uint8_t byte) {
-  for (int i = 7; i >= 0; i--) {
-    io_ask = 1;
-    if (byte & (1 << i)) {
-      delay_500us();
-    } else {
-      delay_500us();
-      delay_500us();
-      delay_500us();
-    }
-    io_ask = 0;
-    delay_500us();
+// PWM transmission using timer 2 with interrupts
+//
+// - the state stores the current part being transmitted (mark/space), and an
+//   index into the buffer
+// - the timer auto-reloads, the timer is set up for the spacing between the
+//   next transmission and the one after. this is why the bit counter seems to
+//   be incremented too early in the diagram below
+// - there is no barrel shifter so the bit extraction is quite inefficient. it
+//   would be much better to store the current byte (or a mask) in the
+//   state and shift by one each time. the utilities would then not be
+//   required, so the isr would be simpler and need to save/restore fewer
+//   registers too
+//
+//           __    __    __
+//         _|  |__|  |__|  |_
+// state:  s m  s  m  s  m  d
+// bit:    0 1  1  2  2  3  3
+
+volatile enum { XMIT_MARK, XMIT_SPACE, XMIT_DONE } xmit_state;
+uint8_t xmit_buf[8];
+volatile uint8_t xmit_bit;
+uint8_t xmit_num_bits;
+
+#define xmit_freq_MHz 5
+#define xmit_mark_len_1 500
+#define xmit_mark_len_0 1500
+#define xmit_space_len_1 500
+#define xmit_space_len_0 500
+#define xmit_warmup 500
+#define xmit_gap 2000
+
+#define xmit_load_timer(time_us)                                               \
+  do {                                                                         \
+    T2H = 0xff & ((0xffff - xmit_freq_MHz * time_us) >> 8);                    \
+    T2L = 0xff & (0xffff - xmit_freq_MHz * time_us);                           \
+  } while (0)
+
+uint8_t xmit_get_bit() {
+  uint8_t local_bit = xmit_bit;
+
+  uint8_t bit = 7 - (local_bit & 0x7);
+  uint8_t byte = local_bit >> 3;
+  return (xmit_buf[byte] >> bit) & 0x01;
+}
+
+void xmit_load_mark() {
+  if (xmit_get_bit()) {
+    xmit_load_timer(xmit_mark_len_1);
+  } else {
+    xmit_load_timer(xmit_mark_len_0);
   }
 }
 
-void xmit(uint8_t state) {
+void xmit_isr(void) __interrupt(TF2_VECTOR) {
+  if (xmit_state == XMIT_MARK) {
+    // end of mark, timer already reloaded with space time, so set up next mark
+    // time
+    io_ask = 0;
+
+    if (xmit_bit < xmit_num_bits) {
+      xmit_load_mark();
+      xmit_state = XMIT_SPACE;
+    } else {
+      xmit_state = XMIT_DONE;
+      AUXR &= ~T2R;
+    }
+  } else if (xmit_state == XMIT_SPACE) {
+    // end of space, timer already reloaded with mark time, so set up next space
+    // time
+    io_ask = 1;
+
+    if (xmit_get_bit()) {
+      xmit_load_timer(xmit_space_len_1);
+    } else {
+      xmit_load_timer(xmit_space_len_0);
+    }
+    xmit_state = XMIT_MARK;
+
+    xmit_bit++;
+  }
+}
+
+void xmit_buffer() {
   io_tx = 0;
-  delay_500us();
+  io_ask = 0;
+
+  // configure timer 2
+  IE2 |= ET2;                // enable interrupt
+  AUXR &= ~(T2_C_T | S1ST2); // timer mode, not used for uart
+  AUXR |= T2x12;             // disable divide by 12
+  AUXR2 &= ~T2CLKO;          // disable output
+
+  xmit_load_timer(xmit_warmup);
 
   for (uint8_t i = 0; i < 5; i++) {
-    xmit_byte(id[0]);
-    xmit_byte(id[1]);
-    xmit_byte((id[2] & ~state_mask) | state);
+    xmit_state = XMIT_SPACE;
+    xmit_bit = 0;
 
-    delay_500us();
-    delay_500us();
-    delay_500us();
-    delay_500us();
+    AUXR |= T2R; // start timer
+
+    xmit_load_mark();
+
+    while (xmit_state != XMIT_DONE) {
+      PCON = IDL;
+      __asm__("nop");
+    }
+
+    // timer will be disabled
+
+    xmit_load_timer(xmit_gap);
   }
 
+  IE2 &= ~ET2; // disable interrupt just in case
+
   io_tx = 1;
+}
+
+void xmit(uint8_t state) {
+  xmit_buf[0] = id[0];
+  xmit_buf[1] = id[1];
+  xmit_buf[2] = (id[2] & ~state_mask) | state;
+  xmit_num_bits = 8 * 3;
+
+  xmit_buffer();
 }
 
 // xmit with blink
