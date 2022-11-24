@@ -132,3 +132,9 @@ reliability.
   calibration says it's about 15% faster than nominal, but it's actually about
   15% slower. Perhaps the calibration is actually a scaled period rather than a
   frequency?
+
+# License
+
+Copyright (C) 2022 Thomas Nixon
+
+GPL3; see LICENSE.txt
