@@ -44,10 +44,8 @@ uint8_t last_state = 0xff;
 
 #define state_mask 0b111
 #define bit_open 0b1
-#define bit_retransmit 0b10
-#define bit_battery 0b100
-
-static const uint8_t id[3] = {0x10, 0x20, 0x30};
+#define bit_battery 0b10
+#define bit_retransmit 0b100
 
 // PWM transmission using timer 2 with interrupts
 //
@@ -68,7 +66,7 @@ static const uint8_t id[3] = {0x10, 0x20, 0x30};
 // bit:    0 1  1  2  2  3  3
 
 volatile enum { XMIT_MARK, XMIT_SPACE, XMIT_DONE } xmit_state;
-uint8_t xmit_buf[8];
+uint8_t xmit_buf[id_size + 1];
 volatile uint8_t xmit_bit;
 uint8_t xmit_num_bits;
 
@@ -167,10 +165,11 @@ void xmit_buffer() {
 }
 
 void xmit(uint8_t state) {
-  xmit_buf[0] = id[0];
-  xmit_buf[1] = id[1];
-  xmit_buf[2] = (id[2] & ~state_mask) | state;
-  xmit_num_bits = 8 * 3;
+  for (uint8_t i = 0; i < id_size; i++) {
+    xmit_buf[i] = GUID[(7 - id_size) + i];
+  }
+  xmit_buf[id_size] = state;
+  xmit_num_bits = (id_size + 1) * 8;
 
   xmit_buffer();
 }

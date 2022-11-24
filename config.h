@@ -14,4 +14,7 @@
 // number of repeats during each transmission
 #define num_repeats 5
 
+// the number of bytes from the GUID to transmit
+#define id_size 3
+
 #endif
