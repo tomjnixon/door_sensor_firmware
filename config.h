@@ -11,4 +11,7 @@
 #define reset_delay 1
 #define max_delay 450
 
+// number of repeats during each transmission
+#define num_repeats 5
+
 #endif

@@ -143,7 +143,7 @@ void xmit_buffer() {
 
   xmit_load_timer(xmit_warmup);
 
-  for (uint8_t i = 0; i < 5; i++) {
+  for (uint8_t i = 0; i < num_repeats; i++) {
     xmit_state = XMIT_SPACE;
     xmit_bit = 0;
 
