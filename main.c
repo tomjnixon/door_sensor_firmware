@@ -211,6 +211,9 @@ void main() {
 
   io_ask = 0;
   io_tx = 1;
+  // wait for battery state to settle
+  for (uint16_t i = 0; i < 1000; i++)
+    delay_500us();
 
   // setup reed interrupt
   IT0 = 0; // rising or falling
