@@ -21,9 +21,9 @@ __sfr __at(0x8E) AUXR;
 
 __sfr __at(0x8F) AUXR2;
 #define T2CLKO 0x04
-#define EX2 0x08
-#define EX3 0x10
-#define EX4 0x20
+#define EX2 0x10
+#define EX3 0x20
+#define EX4 0x40
 
 __sfr __at(0xD6) T2H;
 __sfr __at(0xD7) T2L;
