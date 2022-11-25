@@ -8,7 +8,7 @@ main.ihx: main.c stc15.h config.h
 
 .PHONY: flash
 flash: main.ihx
-	stcgal -P stc15 -t 5000 $<
+	stcgal -P stc15 -t 5000 -o low_voltage_threshold=2 $<
 
 .PHONY: clean
 clean: main.ihx
