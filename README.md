@@ -124,10 +124,6 @@ reliability.
 
 # Errata
 
-- There seems to be some instability which happens the battery gets low, but
-  before the battery indicator says it's low (present in the original firmware
-  too I think). It may be possible to detect this and handle it better.
-
 - The wake-up timer on my test device seems quite inaccurate -- the built-in
   calibration says it's about 15% faster than nominal, but it's actually about
   15% slower. Perhaps the calibration is actually a scaled period rather than a
