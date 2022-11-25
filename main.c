@@ -191,11 +191,10 @@ void reed_isr(void) __interrupt(IE0_VECTOR) {
 }
 
 void battery_isr(void) __interrupt(IE3_VECTOR) {
-  if (!io_batt)
-    state |= bit_battery;
+  state |= bit_battery;
 
-  AUXR2 &= ~EX3; // disable so that this doesn't get triggered repeatedly due to
-                 // noise
+  // disable so that this doesn't get triggered repeatedly due to noise
+  AUXR2 &= ~EX3;
 }
 
 uint16_t current_delay;
@@ -222,9 +221,10 @@ void main() {
   // setup battery interrupt
   AUXR2 |= EX3; // enable (falling only)
 
-  // call the ISRs to fill in the state
+  // get the initial state
   reed_isr();
-  battery_isr();
+  if (!io_batt)
+    state |= bit_battery;
 
   EA = 1; // enable all
 
