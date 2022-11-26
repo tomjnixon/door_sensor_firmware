@@ -67,23 +67,27 @@ Connection details:
 - The programming header is labeled `G T R V` for GND, Transmit, Receive and
   VIN
 
-- 3.3V logic and power should be used
+- 3.3V logic and power should be used. Remove the battery before flashing!
 
-- Make sure to follow the diagram in the datasheet on page 852 (section
-  16.2.2.2) when connecting the TX and RX lines.
+- Connect using a USB-serial converter according to this diagram:
+
+  ![connection diagram](flashing.png)
+
+  This is the same as the diagram in the datasheet on page 852 (section
+  16.2.2.2).
 
   The MCU must be reset cleanly to start the bootloader. The resistor and diode
   are to make sure that the MCU is not powered through the serial
-  data lines. The power switch is necessary to reset the MCU. I'd suggest
-  adding a resistor from VIN to GND while flashing, as while the MCU is
-  sleeping it uses very little current and may keep running on leakage.
+  data lines. The power switch is necessary to reset the MCU. The resistor from
+  3.3v to GND while flashing is necessary because while sleeping it uses very
+  little current and may keep running on leakage.
+
+  Either use a SOIC clip (easier), or connect to the programming header.
 
 - If you're feeling fancy you could build the auto-reset circuit from the
   [stcgal
   FAQ](https://github.com/grigorig/stcgal/blob/master/doc/FAQ.md#how-can-i-use-the-autoreset-feature)
   -- this would need to be enabled on the stcgal command line.
-
-TODO: a better explanation, a diagram, and a printable programming jig
 
 # Data Format
 
