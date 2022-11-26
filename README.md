@@ -114,13 +114,23 @@ n=gswds07,m=OOK_PWM,s=500,l=1500,r=15000,g=1500,repeats>=3,bits=32,unique,get=@0
 
 # Battery Life
 
-TODO: calculate this
+`runtime.py` estimates typical battery life given a few parameters.
 
-Using the wake-up timer to allow periodic retransmission does not seem to
-measurably change the power usage (it's dominated by the boost converter), but
-retransmission will. In the other hand, periodic retransmission may be more
-efficient, as we can use fewer repeats in each message and get the same overall
-reliability.
+For example with a 600mAh battery changing state twice a day:
+
+```
+current:   40.70 uA
+runtime:   1.68 years
+
+fraction used by different activities
+sleep:     86.0%
+wakeup:    0.1%
+tx:        13.9%
+ periodic: 8.0%
+ changes:  5.9%
+```
+
+This is similar to the default firmware (around 32uA idle).
 
 # Errata
 
